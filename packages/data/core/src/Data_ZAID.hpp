@@ -19,6 +19,9 @@
 #include "Utility_TypeTraits.hpp"
 #include "Utility_SerializationHelpers.hpp"
 
+#include <boost/serialization/split_member.hpp>
+
+
 namespace Data{
 
 //! The ZAID class
