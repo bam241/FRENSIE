@@ -53,11 +53,9 @@ RUN apt-get install -y doxygen
 
 # get frensie
 WORKDIR /root
-RUN echo "5"
-RUN git clone https://github.com/bam241/FRENSIE.git
+COPY ./ /root/FRENSIE/
 WORKDIR /root/FRENSIE
-RUN git fetch
-RUN git checkout docker
 RUN mkdir bld
 WORKDIR /root/FRENSIE/bld
 run cmake -D CMAKE_BUILD_TYPE:STRING=RELEASE ..
+RUN make -j 8
