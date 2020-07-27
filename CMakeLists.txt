@@ -250,7 +250,7 @@ IF(FRENSIE_ENABLE_DASHBOARD_CLIENT)
 ELSE()
   ENABLE_TESTING()
 ENDIF()
-
+add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 ##---------------------------------------------------------------------------##
 ## Add an Unistall Target
 ##---------------------------------------------------------------------------##
