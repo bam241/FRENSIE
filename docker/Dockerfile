@@ -45,7 +45,7 @@ RUN cd ~/temp;\
     tar -xvf boost_1_72_0.tar.gz; \
     cd boost_1_72_0;\
     ./bootstrap.sh;\
-    ./b2 install -s NO_BZIP2=1 link=shared runtime-link=shared install;\
+    ./b2 install -s NO_BZIP2=1 link=shared runtime-link=shared cxxflags="-D_GLIBCXX_USE_CXX11_ABI=0" install;\
     cd ../ ;\
     rm -rf boost*
 
@@ -53,8 +53,10 @@ RUN apt-get install -y doxygen
 
 # get frensie
 WORKDIR /root
-RUN git clone https://github.com/FRENSIE/FRENSIE.git
+RUN git clone https://github.com/bam241/FRENSIE.git
 WORKDIR /root/FRENSIE
+RUN git fetch
+RUN git checkout docker
 RUN mkdir bld
 WORKDIR /root/FRENSIE/bld
 run cmake -D CMAKE_BUILD_TYPE:STRING=RELEASE ..
