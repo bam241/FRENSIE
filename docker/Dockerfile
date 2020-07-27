@@ -53,7 +53,7 @@ RUN apt-get install -y doxygen
 
 # get frensie
 WORKDIR /root
-RUN echo "6"
+RUN echo "1"
 RUN git clone https://github.com/bam241/FRENSIE.git
 WORKDIR /root/FRENSIE
 RUN git fetch
