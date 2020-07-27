@@ -48,7 +48,7 @@ MACRO(ENABLE_BOOST_SUPPORT)
     #       messages regarding this usage of the std::auto_ptr class. To avoid
     #       these warning messages that are not direcly related to FRENSIE we
     #       will simply turn them off
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -DBOOST_LOG_DYN_LINK -DBOOST_TEST_DYN_LIN -DBOOST_PROGRAM_OPTIONS_DYN_LINK")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations -DBOOST_LOG_DYN_LINK -DBOOST_PROGRAM_OPTIONS_DYN_LINK")
 
     # Echo the Boost details if a verbose configure was requested
     IF(CMAKE_VERBOSE_CONFIGURE)
