@@ -249,8 +249,7 @@ IF(FRENSIE_ENABLE_DASHBOARD_CLIENT)
     ${CMAKE_BINARY_DIR}/CTestCustom.cmake)
 ELSE()
   ENABLE_TESTING()
-ENDIF()
-add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
+geENDIF()
 ##---------------------------------------------------------------------------##
 ## Add an Unistall Target
 ##---------------------------------------------------------------------------##
