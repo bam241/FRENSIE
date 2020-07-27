@@ -3,6 +3,8 @@
 # 1.)
 MACRO(ENABLE_BOOST_SUPPORT)
 
+    SET(BOOST_MIN_VERSION 1.65.1)
+
     # Enable multithreading in boost (used by the log component)
     SET(Boost_USE_MULTITHREAD ON)
 
@@ -20,7 +22,7 @@ MACRO(ENABLE_BOOST_SUPPORT)
     # component from being appended to the list. Unit tests that have been
     # written using the boost unit test API need to add ${BOOST_TEST_LIBRARY}
     # to the TARGET_LINK_LIBRARIES macro call.
-    FIND_PACKAGE(Boost 1.72.0 REQUIRED COMPONENTS test_exec_monitor)
+    FIND_PACKAGE(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS test_exec_monitor)
 
     IF(${CMAKE_BUILD_TYPE} EQUAL RELEASE)
       SET(BOOST_TEST_LIBRARY ${Boost_TEST_EXEC_MONITOR_LIBRARY_RELEASE})
@@ -38,7 +40,7 @@ MACRO(ENABLE_BOOST_SUPPORT)
       SET(BOOST_COMPONENTS_LIST ${BOOST_COMPONENTS_LIST} mpi)
     ENDIF()
     
-    FIND_PACKAGE(Boost 1.72.0 REQUIRED COMPONENTS ${BOOST_COMPONENTS_LIST})
+    FIND_PACKAGE(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS ${BOOST_COMPONENTS_LIST})
 
     # Set the include paths for Boost
     INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
