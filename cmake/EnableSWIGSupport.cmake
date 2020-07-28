@@ -3,8 +3,7 @@
 # 1.)
 MACRO(ENABLE_SWIG_SUPPORT)
 
-SET(SWIG_MIN_VERSION 3.0.0)
-
+  SET(SWIG_MIN_VERSION 3.0.0)
 
   # Add the user supplied SWIG prefix to help find SWIG
   IF(DEFINED SWIG_PREFIX)
