@@ -19,8 +19,7 @@ RUN apt-get update; \
 # get frensie
 WORKDIR /root
 COPY ./ /root/FRENSIE/
-WORKDIR /root/FRENSIE
-RUN mkdir bld
-WORKDIR /root/FRENSIE/bld
-RUN cmake -D CMAKE_BUILD_TYPE:STRING=RELEASE ..
-RUN make -j 8
+RUN mkdir FRENSIE_bld
+WORKDIR /root/FRENSIE_bld
+RUN cmake -D CMAKE_BUILD_TYPE:STRING=RELEASE -D CMAKE_TIMING_VERBOSE:BOOL=ON ../FRENSIE
+RUN make -j 8 > log
