@@ -14,6 +14,7 @@
 #include "MonteCarlo_ParticleDistribution.hpp"
 #include "Utility_ToStringTraits.hpp"
 #include "Utility_DesignByContract.hpp"
+#include "Utility_Set.hpp"
 
 namespace MonteCarlo{
 

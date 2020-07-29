@@ -26,7 +26,6 @@
 #include "Utility_ExplicitSerializationTemplateInstantiationMacros.hpp"
 #include "Utility_SerializationHelpers.hpp"
 #include "Utility_TypeNameTraits.hpp"
-#include "Utility_Set.hpp"
 
 namespace MonteCarlo{
 

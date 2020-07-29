@@ -2,7 +2,6 @@ FROM frensie/frensie-required
 
 WORKDIR /root
 COPY ./ /root/FRENSIE/
-UN mkdir FRENSIE_bld
 WORKDIR /root/FRENSIE_bld
 RUN cmake -D CMAKE_BUILD_TYPE:STRING=RELEASE -D CMAKE_TIMING_VERBOSE:BOOL=ON ../FRENSIE
-RUN make -j 8 > log
+RUN make
