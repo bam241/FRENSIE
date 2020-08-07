@@ -3,7 +3,7 @@
 ##---------------------------------------------------------------------------##
 
 # Define the minimum required version of CMake
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.10.2 FATAL_ERROR)
 
 # Define the project
 SET(PROJECT_NAME FRENSIE)
