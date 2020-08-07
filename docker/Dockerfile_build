@@ -1,4 +1,4 @@
-FROM frensie/frensie-required
+FROM frensie/frensie-build
 
 WORKDIR /root
 COPY ./ /root/FRENSIE/

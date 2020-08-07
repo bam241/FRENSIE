@@ -12,12 +12,21 @@ RUN apt-get update; \
         libssl-dev \
         python-pip \
         python-dev \
-        libboost-all-dev \
+#        libboost-all-dev \
         swig \
         libeigen3-dev \
         hdf5-tools libhdf5-dev; \
     pip install numpy cython
 
+
+RUN cd ~/temp;\
+    wget https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz;\
+    tar -xvf boost_1_72_0.tar.gz; \
+    cd boost_1_72_0;\
+    ./bootstrap.sh;\
+    ./b2 install -s NO_BZIP2=1 link=shared runtime-link=shared install;\
+    cd ../ ;\
+    rm -rf boost*
 
 RUN mkdir /root/opt;\
     cd /root/opt; \
