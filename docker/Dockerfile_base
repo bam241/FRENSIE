@@ -14,13 +14,13 @@ RUN apt-get update; \
         python-pip \
         python-dev \
         libboost-all-dev \
-        swig \
+        # swig \
         libeigen3-dev \
         hdf5-tools libhdf5-dev \
         autoconf\
         bison byacc \
         libx11-dev libxpm-dev libxft-dev libxext-dev; \
-        # openmpi-bin libopenmpi-dev; \
+        openmpi-bin libopenmpi-dev; \
     pip install numpy cython
 
 RUN apt-get update && \
@@ -62,20 +62,20 @@ RUN mkdir /home/docker/temp /home/docker/opt
 # ENV PATH "/home/docker/opt/hdf5/bin:$PATH"
 
 
-# RUN cd ~/temp;\
-#     mkdir swig;\
-#     cd swig; \
-#     mkdir build; \
-#     git clone https://github.com/swig/swig.git; \
-#     cd swig; \
-#     git fetch -t;\
-#     git checkout -b v4.0.0 v4.0.0; \
-#     ./autogen.sh; \
-#     cd ../build; \
-#     ../swig/configure --prefix=/home/docker/opt/swig; \
-#     make -j 8; \
-#     make install
-# ENV PATH "/home/docker/opt/swig/bin:$PATH"
+RUN cd ~/temp;\
+    mkdir swig;\
+    cd swig; \
+    mkdir build; \
+    git clone https://github.com/swig/swig.git; \
+    cd swig; \
+    git fetch -t;\
+    git checkout -b v4.0.0 v4.0.0; \
+    ./autogen.sh; \
+    cd ../build; \
+    ../swig/configure --prefix=/home/docker/opt/swig; \
+    make -j 8; \
+    make install
+ENV PATH "/home/docker/opt/swig/bin:$PATH"
 
 
 # RUN cd ~/temp; \
