@@ -19,7 +19,7 @@ RUN apt-get update; \
         hdf5-tools libhdf5-dev \
         autoconf\
         bison byacc \
-        libx11-dev libxpm-dev libxft-dev libxext-dev; \
+        libx11-dev libxpm-dev libxft-dev libxext-dev \
         openmpi-bin libopenmpi-dev; \
     pip install numpy cython
 
