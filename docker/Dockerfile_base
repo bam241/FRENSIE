@@ -13,7 +13,7 @@ RUN apt-get update; \
         libssl-dev \
         python-pip \
         python-dev \
-        libboost-all-dev \
+        # libboost-all-dev \
         # swig \
         libeigen3-dev \
         hdf5-tools libhdf5-dev \
@@ -78,16 +78,16 @@ RUN cd ~/temp;\
 ENV PATH "/home/docker/opt/swig/bin:$PATH"
 
 
-# RUN cd ~/temp; \
-#     mkdir boost;\
-#     cd boost; \
-#     wget https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz;\
-#     tar -xvf boost_1_72_0.tar.gz; \
-#     cd boost_1_72_0;\
-#     ./bootstrap.sh  --prefix=/home/docker/opt/boost;\
-#     sed -i "$ a using mpi ;" project-config.jam; \
-#     ./b2 -j8 --prefix=/home/docker/opt/boost -s NO_BZIP2=1 link=shared runtime-link=shared install
-# ENV LD_LIBRARY_PATH "/home/docker/opt/boost/lib/:$LD_LIBRARY_PATH"
+RUN cd ~/temp; \
+    mkdir boost;\
+    cd boost; \
+    wget https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz;\
+    tar -xvf boost_1_72_0.tar.gz; \
+    cd boost_1_72_0;\
+    ./bootstrap.sh  --prefix=/home/docker/opt/boost;\
+    sed -i "$ a using mpi ;" project-config.jam; \
+    ./b2 -j8 --prefix=/home/docker/opt/boost -s NO_BZIP2=1 link=shared runtime-link=shared install
+ENV LD_LIBRARY_PATH "/home/docker/opt/boost/lib/:$LD_LIBRARY_PATH"
 
 RUN cd ~/temp; \
     mkdir moab; \
