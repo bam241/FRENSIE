@@ -11,6 +11,7 @@
 #include <memory>
 #include <csignal>
 #include <functional>
+#include <map>
 
 // Boost Includes
 #include <boost/filesystem.hpp>
@@ -26,6 +27,53 @@
 #include "Utility_UnitTestHarnessWithMain.hpp"
 #include "ArchiveTestHelpers.hpp"
 #include "FRENSIE_config.hpp"
+
+
+
+
+//import PyFrensie.Geometry as Geometry
+//import PyFrensie.Geometry.DagMC as DagMC
+
+#include "PyFrensie_PythonTypeTraits.hpp"
+#include "Geometry_InfiniteMediumNavigator.hpp"
+#include "Geometry_InfiniteMediumModel.hpp"
+#include "Geometry_DagMCModelProperties.hpp"
+#include "Geometry_DagMCModel.hpp"
+#include "Geometry_DagMCNavigator.hpp"
+#include "Geometry_Exceptions.hpp"
+#include "Utility_SerializationHelpers.hpp"
+#include "Utility_DesignByContract.hpp"
+
+
+//import PyFrensie.Utility.Mesh as Mesh
+#include "Utility_StructuredHexMesh.hpp"
+//import PyFrensie.Utility.Distribution as Distribution
+#include "Utility_HistogramDistribution.hpp"
+//import PyFrensie.Utility.DirectionDiscretization as DirectionDiscretization
+#include "Utility_PQLAQuadrature.hpp"
+
+//import PyFrensie.MonteCarlo.Collision as Collision
+//import PyFrensie.MonteCarlo.ActiveRegion as ActiveRegion
+#include "MonteCarlo_StandardParticleDistribution.hpp"
+#include "MonteCarlo_StandardParticleSourceComponent.hpp"
+#include "MonteCarlo_StandardParticleSource.hpp"
+//import PyFrensie.MonteCarlo.Event as Event
+#include "MonteCarlo_CellCollisionFluxEstimator.hpp"
+#include "MonteCarlo_MeshTrackLengthFluxEstimator.hpp"
+//import PyFrensie.MonteCarlo.Manager as Manager
+#include "MonteCarlo_ParticleSimulationManager.hpp"
+#include "MonteCarlo_StandardParticleSimulationManager.hpp"
+#include "MonteCarlo_ParticleSimulationManagerFactory.hpp"
+
+//import PyFrensie.Data as Data
+//import PyFrensie.Data.Native as Native
+#include "Data_ScatteringCenterPropertiesDatabase.hpp"
+
+#include "MonteCarlo_WeightImportanceMesh.hpp"
+#include "MonteCarlo_ParticleType.hpp"
+#include "MonteCarlo_ScatteringCenterDefinitionDatabase.hpp"
+
+
 
 //---------------------------------------------------------------------------//
 // Testing Types
@@ -1632,6 +1680,303 @@ FRENSIE_DATA_UNIT_TEST_INST( ParticleSimulationManager, restart_updated_props )
 #ifdef HAVE_FRENSIE_HDF5
   NEW_ROW( "h5fa" ) <<    "h5fa"      <<    3;
 #endif
+}
+
+//---------------------------------------------------------------------------//
+// Check that a 
+FRENSIE_UNIT_TEST( ParticleSimulationManager, i_choose_thename )
+{
+
+  boost::filesystem::path database_path = "";
+  // Load the database
+  const Data::ScatteringCenterPropertiesDatabase database( database_path );
+
+  double num_particles = 1e2;
+
+  
+  std::shared_ptr<Geometry::DagMCModel>   forward_model;
+// Forward model (must be seperate due to estimator-geometry simultaneous declaration)
+  Geometry::DagMCModelProperties* forward_model_properties = new Geometry::DagMCModelProperties( "test_dagmc_geom_file_name" );
+  forward_model_properties->setMaterialPropertyName("material");
+  forward_model_properties->setDensityPropertyName("density");
+  forward_model_properties->setTerminationCellPropertyName("termination->cell");
+  forward_model_properties->setCellCollisionFluxName("cell->c->flux");
+  forward_model_properties->useFastIdLookup();
+
+  forward_model.reset( new Geometry::DagMCModel( *forward_model_properties));
+
+
+// Needs to be the same for all 3 meshes to avoid split/terminate on birth
+  double mesh_increment = 50.0;
+  double x_distance = 5000;
+  double y_distance = 1000;
+  double z_distance = 1000;
+//Form the mesh for the entire geometry
+  double x0 = -2500.0;
+  std::vector<double> x_planes;
+  for (int i=0; i <  (int)((x_distance/mesh_increment) + 1); i++ ) {
+    x_planes.push_back(i * mesh_increment + x0);
+  }
+  double y0 = -500.0;
+  double z0 = -500.0;
+  std::vector<double> y_planes;
+  std::vector<double> z_planes;
+  for (int i=0; i <  (int)((y_distance/mesh_increment) + 1); i++ ) {
+    y_planes.push_back(i * mesh_increment + y0);
+    z_planes.push_back(i * mesh_increment + z0);
+  }
+
+// entire geometry mesh
+  using StructuredHexMesh::StructuredHexMesh;
+  std::shared_ptr<StructuredHexMesh> geometry_mesh =
+      std::make_shared<StructuredHexMesh>(x_planes, y_planes,
+                                                             z_planes);
+
+  // Form the mesh for the source and response function
+  double x0_src = -2350;
+  double x0_resp = 2300;
+
+  double x_planes_src[2] = [ x0_src, x0_src + 50 ];
+  double x_planes_resp[2] = [ x0_resp, x0_resp + 50 ];
+
+  y0 = -300;
+  z0 = -300;
+  y_planes.clear();
+  z_planes.clear();
+  for (i=0; i<13; i++){
+    y_planes.push_back( i*mesh_increment + y0 );
+    z_planes.push_back( i*mesh_increment + z0 );
+  }
+
+// source/detector mesh objects
+  std::shared_ptr<StructuredHexMesh> source_mesh =
+      std::make_shared<StructuredHexMesh>(x_planes_src, y_planes, z_planes);
+  std::shared_ptr<StructuredHexMesh> response_mesh =
+      std::make_shared<StructuredHexMesh>(x_planes_resp, y_planes, z_planes);
+  size_t number_of_mesh_elements = source_mesh.getNumberOfElements();
+
+// Direction Discretization
+  int PQLA_quadrature_order = 2;
+  using Utility::PQLAQuadrature;
+  std::shared_pr<PQLAQuadrature> direction_discretization =
+      std::make_shared<PQLAQuadrature>(PQLA_quadrature_order);
+  size_t = number_of_direction_elements =
+      direction_discretization.getNumberOfTriangles();
+
+// Non-importance sampled forward source (for initial forward run)
+        // Raw energy histogram in MeV
+  std::vector<double> raw_forward_energy_distribution_bounds = {
+      7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0};
+  std::vector<double> raw_forward_energy_distribution_values = {1.0, 1.0, 1.0,
+                                                                1.0, 1.0, 1.};
+//Use later for source
+  using Utility::HistogramDistribution;
+  std::shared_ptr<HistogramDistribution>
+      raw_forward_energy_distribution = std::make_shared<HistogramDistribution>(
+          raw_forward_energy_distribution_bounds,
+          raw_forward_energy_distribution_values);
+
+  // Raw mesh distribution
+  std::vector<double> raw_forward_mesh_distribution_bounds;
+  for (int i= 0; i < number_of_mesh_elements; i++ )
+    raw_forward_mesh_distribution_bounds.push_back(i);
+  std::vector<double> raw_forward_mesh_distribution_values;
+  for (int i= 0; i < number_of_mesh_elements-1; i++ )
+    raw_forward_mesh_distribution_values.push_back(1.0);
+
+//Use later for source
+  std::shared_ptr<HistogramDistribution>
+      raw_forward_mesh_distribution = std::make_shared<HistogramDistribution>(
+          raw_forward_mesh_distribution_bounds,
+          raw_forward_mesh_distribution_values);
+
+// Form INITIAL particle distributions for source
+  using MonteCarlo::IndependentPhaseSpaceDimensionDistribution;
+  std::shared_ptr<IndependentPhaseSpaceDimensionDistribution>
+      forward_energy_distribution =
+          std::make_shared<IndependentEnergyDimensionDistribution>(
+              raw_forward_energy_distribution);
+  std::shared_ptr<IndependentPhaseSpaceDimensionDistribution>
+    forward_mesh_distribution =
+        std::make_shared<IndependentEnergyDimensionDistribution>(
+            raw_forward_mesh_distribution);
+
+  using MonteCarlo::StandardParticleDistribution;
+  std::shared_ptr<StandardParticleDistribution>
+      forward_particle_distribution =
+          std::make_shared<StandardParticleDistribution>(
+              "Initial forward source distribution");
+  forward_particle_distribution->setDimensionDistribution(
+      forward_energy_distribution);
+  forward_particle_distribution->setMeshIndexDimensionDistribution(
+      forward_mesh_distribution, source_mesh);
+  forward_particle_distribution
+      ->constructDimensionDistributionDependencyTree();
+
+// Set up source
+  using MonteCarlo::StandardParticleSource;
+  using MonteCarlo::StandardPhotonSourceComponent;
+
+  std::shared_ptr<StandardPhotonSourceComponent> forward_particle_source_component;
+
+  forward_particle_source_component = std::make_shared<StandardPhotonSourceComponent>(
+      1, 1, forward_model, forward_particle_distribution);
+  std::shared_ptr<StandardParticleSource> forward_source = std::make_shared<
+      StandardParticleSource>(forward_particle_source_component);
+
+  // initialize forward weight-importance hybrids (all are equal to 1)
+  using MonteCarlo::WeightImportanceMesh;
+
+  std::shared_ptr<WeightImportanceMesh> forward_weight_importance_mesh =
+      std::make_shared<WeightImportanceMesh>();
+  forward_weight_importance_mesh->setMesh(geometry_mesh);
+  forward_weight_importance_mesh->setDirectionDiscretization(
+      Event.ObserverDirectionDimensionDiscretization.PQLA, 2, True);
+  std::vector<double> geometry_mesh_observer_energy_discretization = {
+      0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0,
+      5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5, 10.0};
+
+  std::vector<double> forward_detector_energy_discretization = {0.0, 0.5, 1.0,
+                                                                1.5};
+  forward_weight_importance_mesh->setEnergyDiscretization(
+      geometry_mesh_observer_energy_discretization);
+
+  using Utility::Mesh::ElementHandle;
+  std::unordered_map<ElementHandle, std::vector<double>> weight_importance_dictionary;
+  for (int i =0; i < geometry_mesh.getNumberOfElements(); i++) {
+    std::vector<double> local_weight_importance_vector;
+    for (int j = 0; j < 32; j++) { //direction_index
+          for (int u = 0; u < geometry_mesh_observer_energy_discretization.size()-1; u++) { //energy_discretization_index
+            local_weight_importance_vector.push_back(1);
+          }
+    }
+    weight_importance_dictionary[i] = local_weight_importance_vector;
+  }
+  forward_weight_importance_mesh.setWeightImportanceMap( weight_importance_dictionary );
+
+  
+        
+// Set the simulation properties
+  using MonteCarlo::SimulationProperties;
+  share_ptr<SimulationProperties> simulation_properties =
+      std::make_shared<SimulationProperties>();
+
+  // Simulate photons only
+  simulation_properties->setParticleMode(MonteCarlo::ParticleType::PHOTON);
+
+// Set the number of histories to run and the number of rendezvous
+  simulation_properties->setNumberOfHistories(num_particles);
+  simulation_properties->setMinNumberOfRendezvous(10);
+  simulation_properties->setNumberOfSnapshotsPerBatch(10);
+  simulation_properties->setNumberOfPhotonHashGridBins(100);
+
+//Set up the materials
+  std::shared_ptr<Data::ScatteringCenterPropertiesDatabase> database =
+      std::make_shared<Data::ScatteringCenterPropertiesDatabase>(db_path);
+
+  // Extract the properties for H from the database
+  Data::AtomProperties& H_properties = database->getAtomProperties(Data.ZAID(1000));
+
+  // Extract the properties for Pb from the database
+  Data::AtomProperties& Pb_properties = database->getAtomProperties(Data.ZAID(82000));
+
+// Extract the properties for K from the database
+  Data::AtomProperties& K_properties = database->getAtomProperties(Data.ZAID(19000));
+
+// Extract the properties for Ge from the database
+  Data::AtomProperties& Ge_properties = database->getAtomProperties(Data.ZAID(32000));
+
+// Set the definition for H, Pb, K, Ge for this simulation
+  std::shared_ptr<MonteCarlo::ScatteringCenterDefinitionDatabase>
+      scattering_center_definitions =
+          std::make_shared<MonteCarlo::ScatteringCenterDefinitionDatabase>();
+  MonteCarlo::ScatteringCenterDefinition& H_definition =
+      scattering_center_definitions->createDefinition("H", Data.ZAID(1000));
+  MonteCarlo::ScatteringCenterDefinition& Pb_definition =
+      scattering_center_definitions->createDefinition("Pb", Data.ZAID(82000));
+   MonteCarlo::ScatteringCenterDefinition& K_definition =
+      scattering_center_definitions->createDefinition("K", Data.ZAID(19000));
+   MonteCarlo::ScatteringCenterDefinition& Ge_definition =
+      scattering_center_definitions->createDefinition("Ge", Data.ZAID(32000));
+
+   auto data_file_type = Data::PhotoatomicDataProperties::Native_EPR_FILE;
+   unsigned file_version = 0;
+
+   H_definition.setPhotoatomicDataProperties(
+       H_properties.getSharedPhotoatomicDataProperties(data_file_type,
+                                                       file_version));
+
+   Pb_definition.setPhotoatomicDataProperties(
+       Pb_properties.getSharedPhotoatomicDataProperties(data_file_type,
+                                                        file_version));
+
+   K_definition.setPhotoatomicDataProperties(
+       K_properties.getSharedPhotoatomicDataProperties(data_file_type,
+                                                       file_version));
+
+   Ge_definition.setPhotoatomicDataProperties(
+       Ge_properties.getSharedPhotoatomicDataProperties(data_file_type,
+                                                        file_version));
+
+   // Set the definition for materials
+   std::shared_ptr<MonteCarlo::MaterialDefinitionDatabase> material_definitions = std::make_shared<MaterialDefinitionDatabase>();
+   material_definitions->addDefinition("H", 1, {"H"}, {1.0});
+   material_definitions->addDefinition("Pb", 2, {"Pb"}, {1.0});
+   material_definitions->addDefinition("K", 3, {"K"}, {1.0});
+   material_definitions->addDefinition("Ge", 4, {"Ge"}, {1.0});
+
+  std::shared_ptr<const MonteCarlo::FilledGeometryModel> filled_model;
+
+  filled_model.reset(new MonteCarlo::FilledGeometryModel(
+      db_path, scattering_center_definitions, material_definitions,
+      simulation_properties, model, True));
+
+  // Set up the event handler
+  MonteCarlo::EventHandler event_handler = Event.EventHandler(model, simulation_properties);
+
+
+  // Detector Collision Estimator (main estimator, not VR producing estimator)
+  event_handler.getEstimator(1).setDiscretization<MonteCarlo::ENERGY_DIMENSION>(
+      forward_detector_energy_discretization);
+
+  // Mesh estimator (weight importance mesh producing estimator)
+  std::shared_ptr<MonteCarlo::WeightMultipliedMeshTrackLengthFluxEstimator>
+      forward_mesh_estimator = std::make_shared<
+          MonteCarlo::WeightMultipliedMeshTrackLengthFluxEstimator>(
+          2, 1.0, geometry_mesh);
+
+  forward_mesh_estimator->setDirectionDiscretization(
+      Event.ObserverDirectionDimensionDiscretization.PQLA, 2, False);
+  forward_mesh_estimator->setEnergyDiscretization(
+      geometry_mesh_observer_energy_discretization);
+  forward_mesh_estimator->setParticleTypes([MonteCarlo.PHOTON]);
+  event_handler.addEstimator(forward_mesh_estimator);
+
+  // Detector mesh estimator (for adjoint source biasing)
+  std::shared_ptr<MonteCarlo::WeightMultipliedMeshTrackLengthFluxEstimator>
+    forward_mesh_detector_estimator = std::make_shared<
+        MonteCarlo::WeightMultipliedMeshTrackLengthFluxEstimator>(
+        3, 1.0, detector_mesh);
+
+  forward_mesh_detector_estimator->setDirectionDiscretization(
+      Event.ObserverDirectionDimensionDiscretization.PQLA, 2, False);
+  forward_mesh_detector_estimator->setEnergyDiscretization(
+      forward_detector_energy_discretization);
+  forward_mesh_detector_estimator->setParticleTypes([MonteCarlo.PHOTON]);
+  event_handler.addEstimator(forward_mesh_detector_estimator);
+
+
+  // Set up the simulation manager
+  std::shared_ptr<MonteCarlo::ParticleSimulationManagerFactory>factory = std::make_shared<MonteCarlo::ParticleSimulationManagerFactory>(
+      filled_model, forward_source, event_handler, simulation_properties,
+      sim_name + "_forward", "xml", threads);
+
+// Create the simulation manager
+//factory.setPopulationControl(forward_weight_importance_mesh);
+  manager = factory.getManager();
+  manager.useSingleRendezvousFile();
+
+//Run the simulation manager.runInterruptibleSimulation();
 }
 
 //---------------------------------------------------------------------------//
