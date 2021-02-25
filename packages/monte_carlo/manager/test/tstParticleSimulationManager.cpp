@@ -34,7 +34,7 @@
 //import PyFrensie.Geometry as Geometry
 //import PyFrensie.Geometry.DagMC as DagMC
 
-#include "PyFrensie_PythonTypeTraits.hpp"
+//#include "PyFrensie_PythonTypeTraits.hpp"
 #include "Geometry_InfiniteMediumNavigator.hpp"
 #include "Geometry_InfiniteMediumModel.hpp"
 #include "Geometry_DagMCModelProperties.hpp"
